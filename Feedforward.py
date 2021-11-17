@@ -2,6 +2,9 @@ import numpy as np
 import random
 import pickle
 import random
+# generate random Gaussian values
+from numpy.random import seed
+from numpy.random import randn
 
 # loading training set features
 f = open("Datasets/train_set_features.pkl", "rb")
@@ -78,12 +81,39 @@ while i <= 200:
     i += 1
 
 
+# Generating random weight matrix
+# seed random number generator
+seed(1)
+# generate some Gaussian values
+gaussian_random_values = randn(102*150)
+
+first_hidden_layer_weights = []
+i = 0
+while i <= 101:
+    j = i * 150
+    raw = []
+    while j < (i + 1) * 150:
+        raw.append(gaussian_random_values[j])
+        j += 1
+    first_hidden_layer_weights.append(raw)
+    i += 1
 
 
+# seed random number generator
+seed(1)
+# generate some Gaussian values
+gaussian_random_values = randn(150*60)
 
-
-
-
+second_hidden_layer_weights = []
+i = 0
+while i <= 149:
+    j = i * 60
+    raw = []
+    while j < (i + 1) * 60:
+        raw.append(gaussian_random_values[j])
+        j += 1
+    second_hidden_layer_weights.append(raw)
+    i += 1
 
 
 
