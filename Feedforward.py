@@ -5,6 +5,27 @@ import random
 # generate random Gaussian values
 from numpy.random import seed
 from numpy.random import randn
+import math
+
+
+def maximum_element_number_finder(input_list):
+    maximum_element = 0
+    maximum_amount = input_list[0]
+    i = 1
+    while i < len(input_list):
+        if input_list[i] > maximum_amount:
+            maximum_element = i
+            maximum_amount = input_list[i]
+        i += 1
+    return maximum_element
+
+
+
+
+# This function receives an input and returns the sigmoid amount of the input
+def sigmoid(input_number):
+    return 1 / (1 + math.exp(-input_number))
+
 
 # loading training set features
 f = open("Datasets/train_set_features.pkl", "rb")
@@ -87,7 +108,7 @@ seed(1)
 # generate some Gaussian values
 gaussian_random_values = randn(102*150)
 
-first_hidden_layer_weights = []
+first_weights_array = []
 i = 0
 while i <= 101:
     j = i * 150
@@ -95,7 +116,7 @@ while i <= 101:
     while j < (i + 1) * 150:
         raw.append(gaussian_random_values[j])
         j += 1
-    first_hidden_layer_weights.append(raw)
+    first_weights_array.append(raw)
     i += 1
 
 
@@ -104,7 +125,7 @@ seed(1)
 # generate some Gaussian values
 gaussian_random_values = randn(150*60)
 
-second_hidden_layer_weights = []
+second_weights_array = []
 i = 0
 while i <= 149:
     j = i * 60
@@ -112,14 +133,81 @@ while i <= 149:
     while j < (i + 1) * 60:
         raw.append(gaussian_random_values[j])
         j += 1
-    second_hidden_layer_weights.append(raw)
+    second_weights_array.append(raw)
+    i += 1
+
+
+# seed random number generator
+seed(1)
+# generate some Gaussian values
+gaussian_random_values = randn(60*4)
+
+third_weights_array = []
+i = 0
+while i <= 59:
+    j = i * 4
+    raw = []
+    while j < (i + 1) * 4:
+        raw.append(gaussian_random_values[j])
+        j += 1
+    third_weights_array.append(raw)
     i += 1
 
 
 
 
 
+# Output is calculated here
+correct_result_counter = 0
 
+i = 0
+while i < 200:
+    training_data_features = random_training_data[i][0]
+    first_result_list = []
+    j = 0
+    while j < 150:
+        k = 0
+        first_result = 0
+        while k < 102:
+            first_result += training_data_features[k] * first_weights_array[k][j]
+            k += 1
+        first_result_list.append(sigmoid(first_result))
+        j += 1
+
+
+
+
+    second_result_list = []
+    j = 0
+    while j < 60:
+        k = 0
+        second_result = 0
+        while k < 150:
+            second_result += first_result_list[k] * second_weights_array[k][j]
+            k += 1
+        second_result_list.append(sigmoid(second_result))
+        j += 1
+
+
+    final_result_list = []
+    j = 0
+    while j < 4:
+        k = 0
+        final_result = 0
+        while k < 60:
+            final_result += second_result_list[k] * third_weights_array[k][j]
+            k += 1
+        final_result_list.append(sigmoid(final_result))
+        j += 1
+
+
+    maximum_element_number = maximum_element_number_finder(final_result_list)
+    if random_training_data[i][1][maximum_element_number] == 1:
+        correct_result_counter += 1
+
+    i += 1
+
+print("The accuracy is: " + str(correct_result_counter / 2) + "%")
 
 
 
