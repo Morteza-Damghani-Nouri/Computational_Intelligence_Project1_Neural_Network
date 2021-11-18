@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import random
 import pickle
@@ -135,14 +137,14 @@ def my_plotter(input_error_list):
     i = 0
     y = []
     while i < len(input_error_list):
-        if i == 50 or i == 100 or i == 150 or i == 200:
-            y.append(summation / 50)
+        if i == 200 or i == 400 or i == 600 or i == 800:
+            y.append(summation / 200)
             summation = 0
 
         summation += input_error_list[i]
 
         i += 1
-    y.append(summation / 50)
+    y.append(summation / 200)
     # x axis values
     x = [1, 2, 3, 4, 5]
     # plotting the points
@@ -150,11 +152,13 @@ def my_plotter(input_error_list):
     # naming the x axis
     plt.xlabel("Epoch")
     # naming the y axis
-    plt.ylabel("Error")
+    plt.ylabel("Average Error")
     # function to show the plot
     plt.show()
-    for b in y:
-        print(b)
+    v = 0
+    while v < len(y):
+        print("The average error in " + str(v + 1) + " epoch is: " + str(y[v]))
+        v += 1
 
 
 # This function receives an input and returns the sigmoid amount of the input
@@ -222,12 +226,12 @@ random.shuffle(test_set)
 # print(len(train_set))  # 1962
 # print(len(test_set))  # 662
 
-
+start = time.time()
 # Selecting 200 random data from training dataset
 random_training_data = []
 random_training_elements = []   # This list is used to stop choosing repetitive elements of training_set
 i = 1
-while i <= 50:
+while i <= 200:
     while True:
         random_number = random.randint(0, 1961)
         if random_number not in random_training_elements:
@@ -423,9 +427,10 @@ while epoch <= 5:
 
 
     epoch += 1
-
+stop = time.time()
 my_plotter(errors_list)
 print("The plot is ready")
+print("The executation time is: " + str((stop - start) / 60) + " minutes")
 
 
 
