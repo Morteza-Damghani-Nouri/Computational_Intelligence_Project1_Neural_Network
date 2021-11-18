@@ -9,33 +9,45 @@ import math
 
 
 
-# This function calculates the summation of two matrix and returns the output matrix
-def matrix_summation(first_matrix, second_matrix):
-    if len(first_matrix) != len(second_matrix):
+# This function calculates the subtraction of two matrix and returns the output matrix
+def matrix_subtraction(first_matrix, second_matrix):
+    if len(first_matrix) != len(second_matrix) and len(first_matrix[0]) != len(second_matrix[0]):
         print("There is an error in matrix_summation because of the sizes of two matrix")
         return 0
     output_matrix = []
     i = 0
     while i < len(first_matrix):
-        output_matrix.append(first_matrix[i] + second_matrix[i])
+        j = 0
+        while j < len(first_matrix[0]):
+            output_matrix.append(first_matrix[i][j] - second_matrix[i][j])
+            j += 1
         i += 1
     return output_matrix
 
 
 # This function multiplies the input_number to the input_matrix and returns the result matrix
-def matrix_multiplication_by_number(input_number, input_matrix):
+def matrix_multiplication_by_number(input_number, input_matrix, input_raw, input_column):
     output_matrix = []
     i = 0
-    while i < len(input_matrix):
-        output_matrix.append(input_matrix[i] * input_number)
+    while i < input_raw:
+        temp_matrix = []
+        j = 0
+        while j < input_column:
+            temp_matrix.append(input_number * input_matrix[i][j])
+            j += 1
+        output_matrix.append(temp_matrix)
         i += 1
     return output_matrix
 
 
 # This function calculates the multiplication of two input matrix
 def matrix_multiplication_by_matrix(first_matrix, second_matrix):
-    second_matrix_columns_count = len(second_matrix[0])
+    if isinstance(second_matrix[0], int):
+        second_matrix = [second_matrix]
+    if isinstance(first_matrix[0], int):
+        first_matrix = [first_matrix]
     first_matrix_columns_count = len(first_matrix[0])
+    second_matrix_columns_count = len(second_matrix[0])
     output_matrix = []
     i = 0
     while i < len(first_matrix):
@@ -54,6 +66,7 @@ def matrix_multiplication_by_matrix(first_matrix, second_matrix):
     return output_matrix
 
 
+
 # This function generates the batches according to size of batch
 def batch_generator(input_batch_size, input_data):
     output_list = []
@@ -70,14 +83,19 @@ def batch_generator(input_batch_size, input_data):
     return output_list
 
 
-# This function generates bias array
-def bias_generator(input_number):
-    output = []
+# This function generates a zero matrix with the given dimensions
+def zero_matrix_generator(input_raw, input_column):
+    output_matrix = []
     i = 0
-    while i < input_number:
-        output.append(0)
+    while i < input_raw:
+        j = 0
+        temp_list = []
+        while j < input_column:
+            temp_list.append(0)
+            j += 1
+        output_matrix.append(temp_list)
         i += 1
-    return output
+    return output_matrix
 
 
 # This function returns the element number of the maximum
@@ -93,6 +111,19 @@ def maximum_element_number_finder(input_list):
     return maximum_element
 
 
+# This function receives an input array and calculates the sigmoid prime of the input
+def sigmoid_prime(input_array):
+    output_matrix = []
+    i = 0
+    while i < len(input_array):
+        j = 0
+        temp_list = []
+        while j < len(input_array[0]):
+            temp_list.append(sigmoid(input_array[i][j]) * (1 - sigmoid(input_array[i][j])))
+            j += 1
+        output_matrix.append(temp_list)
+        i += 1
+    return output_matrix
 
 
 # This function receives an input and returns the sigmoid amount of the input
@@ -230,9 +261,9 @@ while i <= 59:
 
 
 # generating biases
-first_biases_array = bias_generator(102)
-second_biases_array = bias_generator(150)
-third_biases_array = bias_generator(60)
+first_biases_array = zero_matrix_generator(1, 102)
+second_biases_array = zero_matrix_generator(1, 150)
+third_biases_array = zero_matrix_generator(1, 60)
 # Output is calculated here
 correct_result_counter = 0
 first_z = []
@@ -262,7 +293,7 @@ while epoch <= 4:
                 k = 0
                 first_result = 0
                 while k < 102:
-                    first_result += training_data_features[k] * first_weights_array[k][j] + first_biases_array[k]
+                    first_result += training_data_features[k] * first_weights_array[k][j] + first_biases_array[0][k]
                     k += 1
                 first_result_list.append(sigmoid(first_result))
                 first_z.append(first_result)
@@ -274,7 +305,7 @@ while epoch <= 4:
                 k = 0
                 second_result = 0
                 while k < 150:
-                    second_result += first_result_list[k] * second_weights_array[k][j] + second_biases_array[k]
+                    second_result += first_result_list[k] * second_weights_array[k][j] + second_biases_array[0][k]
                     k += 1
                 second_result_list.append(sigmoid(second_result))
                 second_z.append(second_result)
@@ -287,7 +318,7 @@ while epoch <= 4:
                 k = 0
                 final_result = 0
                 while k < 60:
-                    final_result += second_result_list[k] * third_weights_array[k][j] + third_biases_array[k]
+                    final_result += second_result_list[k] * third_weights_array[k][j] + third_biases_array[0][k]
                     k += 1
                 final_result_list.append(sigmoid(final_result))
                 final_z.append(final_result)
@@ -296,13 +327,20 @@ while epoch <= 4:
             # Computing gradient descents for each layer
             # This part is for weight derivation
             for p in second_result_list:
-                grad_w_third_layer = matrix_summation(grad_w_third_layer, matrix_multiplication_by_number(2 * p, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), sigmoid_prime(final_z))))
-
-
-
-
-
+                grad_w_third_layer += matrix_multiplication_by_number(2 * p, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array(sigmoid_prime(final_z)).transpose()), 1, 1)[0][0]
             # This part is for bias derivation
+            grad_b_third_layer += matrix_multiplication_by_number(2, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array(sigmoid_prime(final_z)).transpose()), 1, 1)[0][0]
+
+            cost_ak_rond =
+
+            for p in first_result_list:
+
+
+
+
+
+
+
 
 
 
