@@ -8,6 +8,16 @@ from numpy.random import randn
 import math
 
 
+# This function updates weights and biases
+def matrix_updater(input_matrix, input_grad, input_eta, input_raw, input_column, input_batch_size):
+    i = 0
+    while i < input_raw:
+        j = 0
+        while j < input_column:
+            input_matrix[i][j] = input_matrix[i][j] - input_eta * input_grad / input_batch_size
+            j += 1
+        i += 1
+
 
 # This function calculates the subtraction of two matrix and returns the output matrix
 def matrix_subtraction(first_matrix, second_matrix):
@@ -116,12 +126,7 @@ def sigmoid_prime(input_array):
     output_matrix = []
     i = 0
     while i < len(input_array):
-        j = 0
-        temp_list = []
-        while j < len(input_array[0]):
-            temp_list.append(sigmoid(input_array[i][j]) * (1 - sigmoid(input_array[i][j])))
-            j += 1
-        output_matrix.append(temp_list)
+        output_matrix.append(sigmoid(input_array[i]) * (1 - sigmoid(input_array[i])))
         i += 1
     return output_matrix
 
@@ -271,6 +276,7 @@ second_z = []
 final_z = []
 epoch = 0
 batch_size = 10
+eta = 1
 batch_list = batch_generator(batch_size, random_training_data)
 print("The length of batch_list is: " + str(len(batch_list)))
 
@@ -324,23 +330,49 @@ while epoch <= 4:
                 final_z.append(final_result)
                 j += 1
 
-            # Computing gradient descents for each layer
+            # Computing gradient descents for last layer
             # This part is for weight derivation
             for p in second_result_list:
                 grad_w_third_layer += matrix_multiplication_by_number(2 * p, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array(sigmoid_prime(final_z)).transpose()), 1, 1)[0][0]
             # This part is for bias derivation
             grad_b_third_layer += matrix_multiplication_by_number(2, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array(sigmoid_prime(final_z)).transpose()), 1, 1)[0][0]
 
-            cost_ak_rond =
+            cost_ak_rond = []
+            for o in third_weights_array:
+                summation = 0
+                for l in o:
+                    summation += matrix_multiplication_by_number(2 * l, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array(sigmoid_prime(final_z)).transpose()), 1, 1)[0][0]
+                cost_ak_rond.append(summation)
 
+
+            # Computing gradient descents for third layer
+            # This part is for weight derivation
             for p in first_result_list:
+                grad_w_second_layer += matrix_multiplication_by_number(p, matrix_multiplication_by_matrix(cost_ak_rond, np.array(sigmoid_prime(second_z)).transpose()), 1, 1)[0][0]
+            # This part is for bias derivation
+            grad_b_second_layer += matrix_multiplication_by_matrix(cost_ak_rond, np.array(sigmoid_prime(second_z)).transpose())[0][0]
+
+            cost_am_rond = []
+            for o in second_weights_array:
+                summation = 0
+                for l in o:
+                    summation += matrix_multiplication_by_number(l, matrix_multiplication_by_matrix(cost_ak_rond, np.array(sigmoid_prime(second_z)).transpose()), 1, 1)[0][0]
+                cost_am_rond.append(summation)
 
 
+            # Computing gradient descents for third layer
+            # This part is for weight derivation
+            for p in training_data_features:
+                grad_w_first_layer += matrix_multiplication_by_number(p, matrix_multiplication_by_matrix(cost_am_rond, np.array(sigmoid_prime(first_z)).transpose()), 1, 1)[0][0]
+            # This part is for bias derivation
+            grad_b_first_layer += matrix_multiplication_by_matrix(cost_am_rond, np.array(sigmoid_prime(first_z)).transpose())[0][0]
 
-
-
-
-
+        matrix_updater(first_weights_array, grad_w_first_layer, eta, 102, 150, batch_size)
+        matrix_updater(second_weights_array, grad_w_second_layer, eta, 150, 60, batch_size)
+        matrix_updater(third_weights_array, grad_w_third_layer, eta, 60, 4, batch_size)
+        matrix_updater(first_biases_array, grad_b_first_layer, eta, 1, 150, batch_size)
+        matrix_updater(second_biases_array, grad_b_second_layer, eta, 1, 60, batch_size)
+        matrix_updater(third_biases_array, grad_b_third_layer, eta, 1, 4, batch_size)
 
 
 
