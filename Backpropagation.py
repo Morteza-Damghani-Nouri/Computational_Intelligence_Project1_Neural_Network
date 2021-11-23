@@ -132,7 +132,6 @@ def sigmoid_prime(input_array):
 
 
 def my_plotter(input_error_list):
-    print(len(input_error_list))
     summation = 0
     i = 0
     y = []
@@ -300,12 +299,11 @@ first_biases_array = zero_matrix_generator(1, 102)
 second_biases_array = zero_matrix_generator(1, 150)
 third_biases_array = zero_matrix_generator(1, 60)
 # Output is calculated here
-correct_result_counter = 0
 epoch = 1
 batch_size = 10
 eta = 1
 batch_list = batch_generator(batch_size, random_training_data)
-
+model_output_list = []
 while epoch <= 5:
     i = 0
     while i < len(batch_list):
@@ -358,7 +356,8 @@ while epoch <= 5:
                 final_result_list.append(sigmoid(final_result))
                 final_z.append(final_result)
                 j += 1
-
+            if epoch == 5:
+                model_output_list.append(final_result_list)
             h = 0
             error_summation = 0
             while h < 4:
@@ -421,16 +420,26 @@ while epoch <= 5:
 
 
     print("epoch " + str(epoch) + " finished")
-
-
-
-
-
     epoch += 1
+
+
 stop = time.time()
+# Calculating the accuracy
+i = 0
+correct_result_counter = 0
+while i < len(model_output_list):
+    maximum_element_number = maximum_element_number_finder(model_output_list[i])
+    if random_training_data[i][1][maximum_element_number] == 1:
+        correct_result_counter += 1
+    i += 1
+
+
+
+
 my_plotter(errors_list)
 print("The plot is ready")
-print("The executation time is: " + str((stop - start) / 60) + " minutes")
+print("The accuracy is: " + str((correct_result_counter / 200) * 100) + "%")
+print("The executation time is: " + str(round((stop - start) / 60, 2)) + " minutes")
 
 
 
