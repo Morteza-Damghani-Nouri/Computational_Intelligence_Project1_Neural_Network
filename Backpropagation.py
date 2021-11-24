@@ -12,8 +12,8 @@ LEARNING_RATE = 1
 
 
 # This function receives an input and returns the sigmoid amount of the input
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+def sigmoid(input_number):
+    return 1 / (1 + np.exp(-input_number))
 
 
 # loading training set features
@@ -123,19 +123,19 @@ for epoch in range(NUMBER_OF_EPOCHS):
             a2 = sigmoid(w2 @ a1 + b2)
             a3 = sigmoid(w3 @ a2 + b3)
 
-            for j in range(grad_W3.shape[0]):
-                for k in range(grad_W3.shape[1]):
-                    grad_W3[j, k] += 2 * (a3[j, 0] - desired_output[j, 0]) * a3[j, 0] * (1 - a3[j, 0]) * a2[k, 0]
+            for t in range(grad_W3.shape[0]):
+                for p in range(grad_W3.shape[1]):
+                    grad_W3[t, p] += 2 * (a3[t, 0] - desired_output[t, 0]) * a3[t, 0] * (1 - a3[t, 0]) * a2[p, 0]
 
 
-            for j in range(grad_b3.shape[0]):
-                grad_b3[j, 0] += 2 * (a3[j, 0] - desired_output[j, 0]) * a3[j, 0] * (1 - a3[j, 0])
+            for f in range(grad_b3.shape[0]):
+                grad_b3[f, 0] += 2 * (a3[f, 0] - desired_output[f, 0]) * a3[f, 0] * (1 - a3[f, 0])
 
 
             cost_ak_rond = np.zeros((60, 1))
-            for k in range(60):
-                for j in range(4):
-                    cost_ak_rond[k, 0] += 2 * (a3[j, 0] - desired_output[j, 0]) * a3[j, 0] * (1 - a3[j, 0]) * w3[j, k]
+            for l in range(60):
+                for m in range(4):
+                    cost_ak_rond[l, 0] += 2 * (a3[m, 0] - desired_output[m, 0]) * a3[m, 0] * (1 - a3[m, 0]) * w3[m, l]
 
 
             for k in range(grad_W2.shape[0]):
@@ -152,12 +152,12 @@ for epoch in range(NUMBER_OF_EPOCHS):
                     cost_am_rond[m, 0] += cost_ak_rond[k, 0] * a2[k, 0] * (1 - a2[k, 0]) * w2[k, m]
 
 
-            for m in range(grad_W1.shape[0]):
+            for o in range(grad_W1.shape[0]):
                 for v in range(grad_W1.shape[1]):
-                    grad_W1[m, v] += cost_am_rond[m, 0] * a1[m, 0] * (1 - a1[m, 0]) * input_data[v, 0]
+                    grad_W1[o, v] += cost_am_rond[o, 0] * a1[o, 0] * (1 - a1[o, 0]) * input_data[v, 0]
 
-            for m in range(grad_b1.shape[0]):
-                grad_b1[m, 0] += cost_am_rond[m, 0] * a1[m, 0] * (1 - a1[m, 0])
+            for p in range(grad_b1.shape[0]):
+                grad_b1[p, 0] += cost_am_rond[p, 0] * a1[p, 0] * (1 - a1[p, 0])
 
         w3 = w3 - (LEARNING_RATE * (grad_W3 / BATCH_SIZE))
         w2 = w2 - (LEARNING_RATE * (grad_W2 / BATCH_SIZE))
