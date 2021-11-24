@@ -369,30 +369,31 @@ while epoch <= 5:
             # Computing gradient descents for last layer
             # This part is for weight derivation
             for p in second_result_list:
-                grad_w_third_layer += matrix_multiplication_by_number(2 * p, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array([sigmoid_prime(final_z)]).transpose()), 1, 1)[0][0]
+                grad_w_third_layer += (2 * p * ((np.array(final_result_list) - np.array(m[1])) @ (np.array([sigmoid_prime(final_z)]).transpose())))[0][0]
+
             # This part is for bias derivation
-            grad_b_third_layer += matrix_multiplication_by_number(2, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array([sigmoid_prime(final_z)]).transpose()), 1, 1)[0][0]
+            grad_b_third_layer += (2 * ((np.array(final_result_list) - np.array(m[1])) @ (np.array([sigmoid_prime(final_z)]).transpose())))[0][0]
 
             cost_ak_rond = []
             for o in third_weights_array:
                 summation = 0
                 for l in o:
-                    summation += matrix_multiplication_by_number(2 * l, matrix_multiplication_by_matrix(matrix_subtraction(final_result_list, m[1]), np.array([sigmoid_prime(final_z)]).transpose()), 1, 1)[0][0]
+                    summation += (2 * l * ((np.array(final_result_list) - np.array(m[1])) @ (np.array([sigmoid_prime(final_z)]).transpose())))[0][0]
                 cost_ak_rond.append(summation)
 
 
             # Computing gradient descents for third layer
             # This part is for weight derivation
             for p in first_result_list:
-                grad_w_second_layer += matrix_multiplication_by_number(p, matrix_multiplication_by_matrix(cost_ak_rond, np.array([sigmoid_prime(second_z)]).transpose()), 1, 1)[0][0]
+                grad_w_second_layer += p * (cost_ak_rond @ (np.array([sigmoid_prime(second_z)]).transpose()))
             # This part is for bias derivation
-            grad_b_second_layer += matrix_multiplication_by_matrix(cost_ak_rond, np.array([sigmoid_prime(second_z)]).transpose())[0][0]
+            grad_b_second_layer += cost_ak_rond @ (np.array([sigmoid_prime(second_z)]).transpose())
 
             cost_am_rond = []
             for o in second_weights_array:
                 summation = 0
                 for l in o:
-                    summation += matrix_multiplication_by_number(l, matrix_multiplication_by_matrix(cost_ak_rond, np.array([sigmoid_prime(second_z)]).transpose()), 1, 1)[0][0]
+                    summation += l * (cost_ak_rond @ (np.array([sigmoid_prime(second_z)]).transpose()))
                 cost_am_rond.append(summation)
 
 
@@ -400,8 +401,10 @@ while epoch <= 5:
             # This part is for weight derivation
             for p in training_data_features:
                 grad_w_first_layer += matrix_multiplication_by_number(p, matrix_multiplication_by_matrix(cost_am_rond, np.array([sigmoid_prime(first_z)]).transpose()), 1, 1)[0][0]
+
             # This part is for bias derivation
             grad_b_first_layer += matrix_multiplication_by_matrix(cost_am_rond, np.array([sigmoid_prime(first_z)]).transpose())[0][0]
+
 
 
         # Updating weights
@@ -429,47 +432,7 @@ while i < len(model_output_list):
         correct_result_counter += 1
     i += 1
 
-
-
-
 my_plotter(errors_list)
 print("The plot is ready")
 print("The accuracy is: " + str((correct_result_counter / 200) * 100) + "%")
 print("The executation time is: " + str(round((stop - start) / 60, 2)) + " minutes")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
