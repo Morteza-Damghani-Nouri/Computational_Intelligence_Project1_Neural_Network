@@ -2,12 +2,13 @@ import random
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-import math
-total_costs = []
+import time
+
 NUMBER_OF_PIXELS = 102
-number_of_epochs = 5
-batch_size = 10
-learning_rate = 1
+NUMBER_OF_EPOCHS = 5
+BATCH_SIZE = 10
+LEARNING_RATE = 1
+
 
 
 # This function receives an input and returns the sigmoid amount of the input
@@ -56,16 +57,16 @@ train_set = []
 test_set = []
 
 for i in range(len(train_set_features)):
-    label = np.array([0, 0, 0, 0])
-    label[int(train_set_labels[i])] = 1
-    label = label.reshape(4, 1)
-    train_set.append((train_set_features[i].reshape(102, 1), label))
+    desired_output = np.array([0, 0, 0, 0])
+    desired_output[int(train_set_labels[i])] = 1
+    desired_output = desired_output.reshape(4, 1)
+    train_set.append((train_set_features[i].reshape(102, 1), desired_output))
 
 for i in range(len(test_set_features)):
-    label = np.array([0, 0, 0, 0])
-    label[int(test_set_labels[i])] = 1
-    label = label.reshape(4, 1)
-    test_set.append((test_set_features[i].reshape(102, 1), label))
+    desired_output = np.array([0, 0, 0, 0])
+    desired_output[int(test_set_labels[i])] = 1
+    desired_output = desired_output.reshape(4, 1)
+    test_set.append((test_set_features[i].reshape(102, 1), desired_output))
 
 # shuffle
 random.shuffle(train_set)
@@ -91,28 +92,24 @@ while i <= 200:
 
 
 
-
-# After generating input trainset
-# Initialize W with random normal distribution for each layer.
+# Main part of the code starts here
 W1 = np.random.normal(size=(150, NUMBER_OF_PIXELS))
 W2 = np.random.normal(size=(60, 150))
 W3 = np.random.normal(size=(4, 60))
 
-# Initialize b = 0, for each layer.
 b1 = np.zeros((150, 1))
 b2 = np.zeros((60, 1))
 b3 = np.zeros((4, 1))
 
+total_costs = []
 
-
-for epoch in range(number_of_epochs):
-    batches = [random_training_data[x:x + batch_size] for x in range(0, 200, batch_size)]
+batches = [train_set[x:x + BATCH_SIZE] for x in range(0, 200, BATCH_SIZE)]
+for epoch in range(NUMBER_OF_EPOCHS):
     for batch in batches:
-        # allocate grad_W matrix for each layer
         grad_W1 = np.zeros((150, NUMBER_OF_PIXELS))
         grad_W2 = np.zeros((60, 150))
         grad_W3 = np.zeros((4, 60))
-        # allocate grad_b for each layer
+
         grad_b1 = np.zeros((150, 1))
         grad_b2 = np.zeros((60, 1))
         grad_b3 = np.zeros((4, 1))
@@ -125,53 +122,40 @@ for epoch in range(number_of_epochs):
 
             # ---- Last layer
             # weight
-            for j in range(grad_W3.shape[0]):
-                for k in range(grad_W3.shape[1]):
-                    grad_W3[j, k] += 2 * (a3[j, 0] - label[j, 0]) * a3[j, 0] * (1 - a3[j, 0]) * a2[k, 0]
+            grad_W3 += (2 * (a3 - label) * a3 * (1 - a3)) @ np.transpose(a2)
 
             # bias
-            for j in range(grad_b3.shape[0]):
-                grad_b3[j, 0] += 2 * (a3[j, 0] - label[j, 0]) * a3[j, 0] * (1 - a3[j, 0])
+            grad_b3 += 2 * (a3 - label) * a3 * (1 - a3)
 
             # ---- 3rd layer
             # activation
             delta_3 = np.zeros((60, 1))
-            for k in range(60):
-                for j in range(4):
-                    delta_3[k, 0] += 2 * (a3[j, 0] - label[j, 0]) * a3[j, 0] * (1 - a3[j, 0]) * W3[j, k]
+            delta_3 += np.transpose(W3) @ (2 * (a3 - label) * (a3 * (1 - a3)))
 
             # weight
-            for k in range(grad_W2.shape[0]):
-                for m in range(grad_W2.shape[1]):
-                    grad_W2[k, m] += delta_3[k, 0] * a2[k, 0] * (1 - a2[k, 0]) * a1[m, 0]
+            grad_W2 += (a2 * (1 - a2) * delta_3) @ np.transpose(a1)
 
             # bias
-            for k in range(grad_b2.shape[0]):
-                grad_b2[k, 0] += delta_3[k, 0] * a2[k, 0] * (1 - a2[k, 0])
+            grad_b2 += delta_3 * a2 * (1 - a2)
 
             # ---- 2nd layer
             # activation
             delta_2 = np.zeros((150, 1))
-            for m in range(150):
-                for k in range(60):
-                    delta_2[m, 0] += delta_3[k, 0] * a2[k, 0] * (1 - a2[k, 0]) * W2[k, m]
+            delta_2 += np.transpose(W2) @ delta_3 * a2 * (1 - a2)
 
             # weight
-            for m in range(grad_W1.shape[0]):
-                for v in range(grad_W1.shape[1]):
-                    grad_W1[m, v] += delta_2[m, 0] * a1[m, 0] * (1 - a1[m, 0]) * image[v, 0]
+            grad_W1 += (delta_2 * a1 * (1 - a1)) @ np.transpose(image)
 
             # bias
-            for m in range(grad_b1.shape[0]):
-                grad_b1[m, 0] += delta_2[m, 0] * a1[m, 0] * (1 - a1[m, 0])
+            grad_b1 += delta_2 * a1 * (1 - a1)
 
-        W3 = W3 - (learning_rate * (grad_W3 / batch_size))
-        W2 = W2 - (learning_rate * (grad_W2 / batch_size))
-        W1 = W1 - (learning_rate * (grad_W1 / batch_size))
+        W3 = W3 - (LEARNING_RATE * (grad_W3 / BATCH_SIZE))
+        W2 = W2 - (LEARNING_RATE * (grad_W2 / BATCH_SIZE))
+        W1 = W1 - (LEARNING_RATE * (grad_W1 / BATCH_SIZE))
 
-        b3 = b3 - (learning_rate * (grad_b3 / batch_size))
-        b2 = b2 - (learning_rate * (grad_b2 / batch_size))
-        b1 = b1 - (learning_rate * (grad_b1 / batch_size))
+        b3 = b3 - (LEARNING_RATE * (grad_b3 / BATCH_SIZE))
+        b2 = b2 - (LEARNING_RATE * (grad_b2 / BATCH_SIZE))
+        b1 = b1 - (LEARNING_RATE * (grad_b1 / BATCH_SIZE))
 
     # calculate cost average per epoch
     cost = 0
@@ -187,13 +171,10 @@ for epoch in range(number_of_epochs):
     cost /= 200
     total_costs.append(cost)
 
-
-
-epoch_size = [x for x in range(5)]
+epoch_size = [x for x in range(NUMBER_OF_EPOCHS)]
 plt.plot(epoch_size, total_costs)
-plt.show()
 number_of_correct_estimations = 0
-for train_data in random_training_data[:200]:
+for train_data in train_set[:200]:
     a0 = train_data[0]
     a1 = sigmoid(W1 @ a0 + b1)
     a2 = sigmoid(W2 @ a1 + b2)
@@ -206,4 +187,5 @@ for train_data in random_training_data[:200]:
         number_of_correct_estimations += 1
 
 print(f"Accuracy: {number_of_correct_estimations / 200}")
+
 

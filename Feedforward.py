@@ -110,14 +110,14 @@ gaussian_random_values = randn(102*150)
 
 first_weights_array = []
 i = 0
-while i <= 101:
+for i in range(102):
     j = i * 150
     raw = []
     while j < (i + 1) * 150:
         raw.append(gaussian_random_values[j])
         j += 1
     first_weights_array.append(raw)
-    i += 1
+
 
 
 # seed random number generator
@@ -127,14 +127,14 @@ gaussian_random_values = randn(150*60)
 
 second_weights_array = []
 i = 0
-while i <= 149:
+for i in range(150):
     j = i * 60
     raw = []
     while j < (i + 1) * 60:
         raw.append(gaussian_random_values[j])
         j += 1
     second_weights_array.append(raw)
-    i += 1
+
 
 
 # seed random number generator
@@ -144,14 +144,15 @@ gaussian_random_values = randn(60*4)
 
 third_weights_array = []
 i = 0
-while i <= 59:
+for i in range(60):
     j = i * 4
     raw = []
     while j < (i + 1) * 4:
         raw.append(gaussian_random_values[j])
         j += 1
     third_weights_array.append(raw)
-    i += 1
+
+
 
 
 
@@ -161,51 +162,51 @@ while i <= 59:
 correct_result_counter = 0
 
 i = 0
-while i < 200:
+for i in range(200):
     training_data_features = random_training_data[i][0]
     first_result_list = []
     j = 0
-    while j < 150:
+    for j in range(150):
         k = 0
         first_result = 0
         while k < 102:
             first_result += training_data_features[k] * first_weights_array[k][j]
             k += 1
         first_result_list.append(sigmoid(first_result))
-        j += 1
+
 
 
 
 
     second_result_list = []
     j = 0
-    while j < 60:
+    for j in range(60):
         k = 0
         second_result = 0
         while k < 150:
             second_result += first_result_list[k] * second_weights_array[k][j]
             k += 1
         second_result_list.append(sigmoid(second_result))
-        j += 1
+
 
 
     final_result_list = []
     j = 0
-    while j < 4:
+    for j in range(4):
         k = 0
         final_result = 0
         while k < 60:
             final_result += second_result_list[k] * third_weights_array[k][j]
             k += 1
         final_result_list.append(sigmoid(final_result))
-        j += 1
+
 
 
     maximum_element_number = maximum_element_number_finder(final_result_list)
     if random_training_data[i][1][maximum_element_number] == 1:
         correct_result_counter += 1
 
-    i += 1
+
 
 print("The accuracy is: " + str(correct_result_counter / 2) + "%")
 
