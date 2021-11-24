@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import time
 
 NUMBER_OF_PIXELS = 102
-NUMBER_OF_EPOCHS = 20
+NUMBER_OF_EPOCHS = 10
 BATCH_SIZE = 10
 LEARNING_RATE = 1
 
@@ -77,28 +77,16 @@ random.shuffle(test_set)
 # print(len(test_set))  # 662
 
 
-# Selecting 200 random data from training dataset
-random_training_data = []
-random_training_elements = []   # This list is used to stop choosing repetitive elements of training_set
-i = 1
-while i <= 200:
-    while True:
-        random_number = random.randint(0, 1961)
-        if random_number not in random_training_elements:
-            random_training_elements.append(random_number)
-            random_training_data.append(train_set[random_number])
-            break
-    i += 1
-
 
 
 
 # Main part of the model starts here
 # Random weights and biases are generated here
-accuracies_list = []
-start = time.time()
+train_accuracies_list = []
+test_accuracies_list = []
+execution_start_time = time.time()
 for program_run_counter in range(10):
-
+    start = time.time()
     w1 = np.random.normal(size=(150, NUMBER_OF_PIXELS))
     w2 = np.random.normal(size=(60, 150))
     w3 = np.random.normal(size=(4, 60))
@@ -110,7 +98,7 @@ for program_run_counter in range(10):
     costs_list = []
 
     for epoch in range(NUMBER_OF_EPOCHS):
-        batches = [random_training_data[element:element + BATCH_SIZE] for element in range(0, 200, BATCH_SIZE)]
+        batches = [train_set[element:element + BATCH_SIZE] for element in range(0, 1962, BATCH_SIZE)]
         for batch in batches:
 
             grad_w1 = np.zeros((150, NUMBER_OF_PIXELS))
@@ -145,7 +133,7 @@ for program_run_counter in range(10):
 
         # Cost is calculated here
         cost = 0
-        for train_data in random_training_data[:200]:
+        for train_data in train_set:
             a0 = train_data[0]
             a1 = sigmoid(w1 @ a0 + b1)
             a2 = sigmoid(w2 @ a1 + b2)
@@ -154,17 +142,17 @@ for program_run_counter in range(10):
             for j in range(4):
                 cost += np.power((a3[j, 0] - train_data[1][j, 0]), 2)
 
-        cost /= 200
+        cost /= 1962
         costs_list.append(cost)
 
 
 
-
+    stop = time.time()
     if program_run_counter == 0:
-        epoch_size = [x for x in range(20)]
+        epoch_size = [x for x in range(10)]
         plt.plot(epoch_size, costs_list)
     correct_result_counter = 0
-    for train_data in random_training_data[:200]:
+    for train_data in train_set:
         a0 = train_data[0]
         a1 = sigmoid(w1 @ a0 + b1)
         a2 = sigmoid(w2 @ a1 + b2)
@@ -173,13 +161,31 @@ for program_run_counter in range(10):
         real_output = np.where(train_data[1] == np.amax(train_data[1]))
         if model_output == real_output:
             correct_result_counter += 1
-    accuracies_list.append(round((correct_result_counter / 200) * 100, 2))
+    train_accuracies_list.append(round((correct_result_counter / 1962) * 100, 2))
+    correct_result_counter = 0
+    for test_data in test_set:
+        a0 = test_data[0]
+        a1 = sigmoid(w1 @ a0 + b1)
+        a2 = sigmoid(w2 @ a1 + b2)
+        a3 = sigmoid(w3 @ a2 + b3)
+        model_output = np.where(a3 == np.amax(a3))
+        real_output = np.where(test_data[1] == np.amax(test_data[1]))
+        if model_output == real_output:
+            correct_result_counter += 1
+    test_accuracies_list.append(round((correct_result_counter / 662) * 100, 2))
 
-stop = time.time()
+
+
+executation_stop_time = time.time()
 sum = 0
-for i in accuracies_list:
+for i in train_accuracies_list:
     sum += i
 plt.show()
-print("The average accuracy is: " + str(round((sum / 10), 2)) + "%")
-print("The executation time is: " + str(round((stop - start), 2)) + " seconds")
+print("The average accuracy of train data is: " + str(round((sum / 10), 2)) + "%")
+sum = 0
+for i in test_accuracies_list:
+    sum += i
+print("The average accuracy of test data is: " + str(round((sum / 10), 2)) + "%")
+print("Train time is: " + str(round((stop - start), 2)) + " seconds")
+print("Total execution time is: " + str(round((executation_stop_time - execution_start_time), 2)) + " seconds")
 

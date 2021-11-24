@@ -24,7 +24,7 @@ def maximum_element_number_finder(input_list):
 
 # This function receives an input and returns the sigmoid amount of the input
 def sigmoid(input_number):
-    return 1 / (1 + math.exp(-input_number))
+    return 1 / (1 + np.exp(-input_number))
 
 
 # loading training set features
@@ -102,111 +102,30 @@ while i <= 200:
     i += 1
 
 
-# Generating random weight matrix
-# seed random number generator
-seed(1)
-# generate some Gaussian values
-gaussian_random_values = randn(102*150)
-
-first_weights_array = []
-i = 0
-for i in range(102):
-    j = i * 150
-    raw = []
-    while j < (i + 1) * 150:
-        raw.append(gaussian_random_values[j])
-        j += 1
-    first_weights_array.append(raw)
-
-
-
-# seed random number generator
-seed(1)
-# generate some Gaussian values
-gaussian_random_values = randn(150*60)
-
-second_weights_array = []
-i = 0
-for i in range(150):
-    j = i * 60
-    raw = []
-    while j < (i + 1) * 60:
-        raw.append(gaussian_random_values[j])
-        j += 1
-    second_weights_array.append(raw)
-
-
-
-# seed random number generator
-seed(1)
-# generate some Gaussian values
-gaussian_random_values = randn(60*4)
-
-third_weights_array = []
-i = 0
-for i in range(60):
-    j = i * 4
-    raw = []
-    while j < (i + 1) * 4:
-        raw.append(gaussian_random_values[j])
-        j += 1
-    third_weights_array.append(raw)
-
-
-
-
 
 
 
 # Output is calculated here
+w1 = np.random.normal(size=(150, 102))
+w2 = np.random.normal(size=(60, 150))
+w3 = np.random.normal(size=(4, 60))
+b1 = np.zeros((150, 1))
+b2 = np.zeros((60, 1))
+b3 = np.zeros((4, 1))
 correct_result_counter = 0
 
-i = 0
-for i in range(200):
-    training_data_features = random_training_data[i][0]
-    first_result_list = []
-    j = 0
-    for j in range(150):
-        k = 0
-        first_result = 0
-        while k < 102:
-            first_result += training_data_features[k] * first_weights_array[k][j]
-            k += 1
-        first_result_list.append(sigmoid(first_result))
+correct_result_counter = 0
+for train_data in random_training_data[:200]:
+    a0 = train_data[0]
+    a1 = sigmoid(w1 @ a0 + b1)
+    a2 = sigmoid(w2 @ a1 + b2)
+    a3 = sigmoid(w3 @ a2 + b3)
 
+    model_output = np.where(a3 == np.amax(a3))
+    real_output = np.where(train_data[1] == np.amax(train_data[1]))
 
-
-
-
-    second_result_list = []
-    j = 0
-    for j in range(60):
-        k = 0
-        second_result = 0
-        while k < 150:
-            second_result += first_result_list[k] * second_weights_array[k][j]
-            k += 1
-        second_result_list.append(sigmoid(second_result))
-
-
-
-    final_result_list = []
-    j = 0
-    for j in range(4):
-        k = 0
-        final_result = 0
-        while k < 60:
-            final_result += second_result_list[k] * third_weights_array[k][j]
-            k += 1
-        final_result_list.append(sigmoid(final_result))
-
-
-
-    maximum_element_number = maximum_element_number_finder(final_result_list)
-    if random_training_data[i][1][maximum_element_number] == 1:
+    if model_output == real_output:
         correct_result_counter += 1
-
-
 
 print("The accuracy is: " + str(correct_result_counter / 2) + "%")
 
